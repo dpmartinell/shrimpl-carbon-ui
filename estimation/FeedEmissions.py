@@ -6,7 +6,7 @@ from typing import Literal, Optional
 Boundary = Literal["A", "B"]
 
 # Boundary A defaults from methodology (Section 4.1.2) and Annex II
-_DEFAULT_FEED_EF_KGCO2E_PER_KG = 8.7  # marine shrimp feed, kg CO2e per kg feed (20-year GWP)
+_DEFAULT_FEED_EF_KGCO2E_PER_KG = 8.7  # marine shrimp feed, kg CO2e per kg feed (per methodology default; ensure consistency with your chosen GWP horizon)
 _DEFAULT_SEED_EF_KGCO2E_PER_1000_PL = 0.23  # kg CO2e per 1,000 PL
 
 # Public constants (used by UI defaults)
@@ -35,7 +35,9 @@ def feed_emissions_kgco2e(
     if total_feed_kg < 0:
         raise ValueError("total_feed_kg must be >= 0")
 
-    if boundary == "B" and emission_intensity_kgco2e_per_kg is not None:
+    # MRV: if a feed EF is explicitly provided (supplier LCA, internal factor, policy factor), use it.
+    # Boundary still matters for reporting/audit, but the calculation should follow the provided factor.
+    if emission_intensity_kgco2e_per_kg is not None:
         ef = emission_intensity_kgco2e_per_kg
     else:
         ef = _DEFAULT_FEED_EF_KGCO2E_PER_KG
@@ -59,7 +61,8 @@ def seed_emissions_kgco2e(
     if thousand_pl < 0:
         raise ValueError("thousand_pl must be >= 0")
 
-    if boundary == "B" and emission_intensity_kgco2e_per_thousand_pl is not None:
+    # MRV: if a hatchery EF is explicitly provided, use it.
+    if emission_intensity_kgco2e_per_thousand_pl is not None:
         ef = emission_intensity_kgco2e_per_thousand_pl
     else:
         ef = _DEFAULT_SEED_EF_KGCO2E_PER_1000_PL
